@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Likes Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            input: '#334155',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-field {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-200">
+
+    <div id="maintenanceOverlay"
+        class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center hidden">
+        <div class="text-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-2xl max-w-md mx-4">
+            <div class="mb-4">
+                <svg class="w-16 h-16 text-indigo-500 mx-auto animate-spin" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">System Maintenance</h2>
+            <p class="text-slate-400">We are currently updating security tokens to ensure service quality. This process
+                takes a few minutes.</p>
+            <p class="text-indigo-400 mt-4 text-sm font-mono animate-pulse">Please wait...</p>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 w-full z-40 glass-panel border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                        Send Likes Bot
+                    </span>
+                    <span
+                        class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
+                        BETA
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Support & Buy Actions -->
+    <div class="fixed top-20 left-0 w-full z-30 px-4 pointer-events-none">
+        <div class="max-w-lg mx-auto grid grid-cols-2 gap-3 pointer-events-auto animate-fade-in">
+            <!-- WhatsApp Button -->
+            <a href="https://wa.me/212728593475" target="_blank" 
+               class="flex items-center justify-center gap-2 p-3 rounded-xl bg-green-500/10 border border-green-500/20 backdrop-blur-md hover:bg-green-500/20 transition-all group cursor-pointer">
+                <svg class="w-6 h-6 text-green-400 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.231-.298.347-.497.116-.198.058-.372-.029-.545-.087-.173-.793-1.912-1.087-2.618-.29-.695-.588-.601-.807-.611-.206-.01-.442-.012-.678-.012-.236 0-.62.089-.943.446-.323.357-1.233 1.205-1.233 2.941 0 1.736 1.265 3.413 1.441 3.65.176.237 2.49 3.801 6.033 5.33 2.44 1.053 2.936.843 3.48.791.544-.052 1.758-.718 2.006-1.412.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                <div class="text-left">
+                    <div class="text-[10px] text-green-400/70 uppercase font-bold tracking-wider leading-none">Buy Coupon</div>
+                    <div class="text-sm font-bold text-green-100 leading-none mt-1">WhatsApp</div>
+                </div>
+            </a>
+
+            <!-- Telegram Button -->
+            <a href="https://t.me/xn300vd" target="_blank"
+               class="flex items-center justify-center gap-2 p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 backdrop-blur-md hover:bg-sky-500/20 transition-all group cursor-pointer">
+                <svg class="w-6 h-6 text-sky-400 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+                <div class="text-left">
+                    <div class="text-[10px] text-sky-400/70 uppercase font-bold tracking-wider leading-none">Join Channel</div>
+                    <div class="text-sm font-bold text-sky-100 leading-none mt-1">Telegram</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-panel rounded-2xl w-full max-w-lg p-8 animate-slide-up relative overflow-hidden">
+        <!-- Decorative elements -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+        </div>
+
+        <div class="text-center mb-8">
+            <h1
+                class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400 tracking-tight">
+                Send Likes</h1>
+            <p class="text-slate-400 text-sm font-light">Boost your Free Fire Likes
+                instantly</p>
+        </div>
+
+        <form id="likesForm" class="space-y-6">
+            <div>
+                <label for="id"
+                    class="block text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-2">Account
+                    ID</label>
+                <input type="text" id="id" name="id" required placeholder="e.g., 123456789"
+                    class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 outline-none">
+            </div>
+
+            <div>
+                <label for="coupon"
+                    class="block text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-2">Coupon Code</label>
+                <div class="relative">
+                    <input type="text" id="coupon" name="coupon" required placeholder="e.g., LIKES-ABCD-1234-EFGH"
+                        class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 outline-none pr-10">
+                    <div id="couponStatusIcon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                        <!-- Icons injected via JS -->
+                    </div>
+                </div>
+                <div id="couponFeedback" class="mt-2 text-xs hidden transition-all duration-300"></div>
+            </div>
+
+            <div class="grid   gap-5">
+                <div>
+                    <label for="region"
+                        class="block text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-2">Region</label>
+                    <div class="relative">
+                        <select id="region" name="region" disabled
+                            class="input-field w-full px-4 py-3 rounded-xl text-slate-400 outline-none appearance-none cursor-not-allowed bg-slate-800/50">
+                            <option value="ME" selected>ME / BD / VN / RU / PK / SG</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn"
+                class="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 p-px focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+                <span
+                    class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+                <span
+                    class="relative flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 py-3 transition-all duration-300 group-hover:bg-opacity-0">
+                    <span class="font-semibold text-white">Start Sending</span>
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 text-indigo-400 group-hover:text-white transition-colors" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </span>
+            </button>
+        </form>
+
+        <div id="resultArea" class="mt-6 hidden animate-fade-in">
+            <!-- Player Profile Card -->
+            <div id="playerProfile"
+                class="hidden mb-4 p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <svg class="w-32 h-32 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                </div>
+
+                <div class="relative z-10">
+                    <!-- Profile Board Image -->
+                    <div style="width:280px;height:60px"
+                        class="mb-6 rounded-xl overflow-hidden shadow-2xl border border-slate-700/50 bg-slate-900/50">
+                        <img id="profileBoardImg" src="" alt="Profile Board"
+                            class="w-full h-auto object-cover opacity-0 transition-opacity duration-500"
+                            onload="this.classList.remove('opacity-0')">
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-4">
+                        <div
+                            class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                            <span id="avatarInitial">?</span>
+                        </div>
+                        <div>
+                            <h2 id="profileName" class="text-2xl font-bold text-white tracking-tight">Unknown
+                            </h2>
+                            <div class="flex items-center gap-2 text-sm text-slate-400">
+                                <span id="profileRegion"
+                                    class="px-2 py-0.5 rounded bg-slate-700/50 border border-slate-600">Region:
+                                    --</span>
+                                <span id="profileLevel"
+                                    class="px-2 py-0.5 rounded bg-slate-700/50 border border-slate-600">Lvl:
+                                    --</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                            <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">
+                                Initial Likes</div>
+                            <div id="likesBefore" class="text-xl font-mono text-slate-200">
+                                --</div>
+                        </div>
+                        <div
+                            class="p-3 rounded-xl bg-indigo-900/20 border border-indigo-500/30 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-indigo-500/10 animate-pulse">
+                            </div>
+                            <div class="relative z-10">
+                                <div class="text-xs text-indigo-300 uppercase tracking-wider mb-1">
+                                    Current Likes</div>
+                                <div class="flex items-baseline gap-2">
+                                    <div id="likesAfter" class="text-xl font-mono text-white font-bold">--
+                                    </div>
+                                    <div id="likesDiff" class="text-sm font-bold text-emerald-400 hidden">+0
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                <h3 class="text-sm font-semibold mb-2 flex items-center gap-2" id="statusHeader">
+                    <!-- Icon and text injected here -->
+                </h3>
+                <div class="relative">
+                    <pre id="responseText"
+                        class="text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap font-mono p-2 rounded bg-slate-900/50 border border-slate-700/30"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Coupon Validation Logic
+        const couponInput = document.getElementById('coupon');
+        const couponFeedback = document.getElementById('couponFeedback');
+        const couponStatusIcon = document.getElementById('couponStatusIcon');
+        let couponCheckTimeout;
+
+        couponInput.addEventListener('input', function() {
+            const code = this.value.trim();
+            
+            // Reset UI
+            couponFeedback.classList.add('hidden');
+            couponStatusIcon.classList.add('hidden');
+            couponInput.classList.remove('border-green-500', 'border-red-500');
+            
+            clearTimeout(couponCheckTimeout);
+
+            if (code.length < 5) return;
+
+            // Debounce check
+            couponCheckTimeout = setTimeout(async () => {
+                // Show loading state
+                couponStatusIcon.innerHTML = `<svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                couponStatusIcon.classList.remove('hidden');
+
+                try {
+                    const res = await fetch(`/check-coupon?code=${encodeURIComponent(code)}`);
+                    const data = await res.json();
+
+                    couponStatusIcon.classList.remove('hidden');
+                    couponFeedback.classList.remove('hidden');
+
+                    if (data.valid) {
+                        // Valid
+                        couponInput.classList.add('border-green-500');
+                        couponStatusIcon.innerHTML = `<svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+                        couponFeedback.innerHTML = `<span class="text-green-400 font-medium">Valid Coupon:</span> <span class="text-slate-300">${data.likes} likes remaining</span>`;
+                    } else {
+                        // Invalid
+                        couponInput.classList.add('border-red-500');
+                        couponStatusIcon.innerHTML = `<svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
+                        couponFeedback.innerHTML = `<span class="text-red-400">${data.message}</span>`;
+                    }
+                } catch (e) {
+                    console.error('Coupon check failed', e);
+                    couponStatusIcon.classList.add('hidden');
+                }
+            }, 500); // 500ms delay
+        });
+
+        document.getElementById('likesForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            const btnText = btn.querySelector('span.relative');
+            const resultArea = document.getElementById('resultArea');
+            const playerProfile = document.getElementById('playerProfile');
+            const responseText = document.getElementById('responseText');
+            const statusHeader = document.getElementById('statusHeader');
+
+            // Profile Elements
+            const profileName = document.getElementById('profileName');
+            const profileRegion = document.getElementById('profileRegion');
+            const profileLevel = document.getElementById('profileLevel');
+            const avatarInitial = document.getElementById('avatarInitial');
+            const likesBefore = document.getElementById('likesBefore');
+            const likesAfter = document.getElementById('likesAfter');
+            const likesDiff = document.getElementById('likesDiff');
+            const profileBoardImg = document.getElementById('profileBoardImg');
+
+            // Reset UI
+            resultArea.classList.add('hidden');
+            playerProfile.classList.add('hidden');
+            likesDiff.classList.add('hidden');
+            likesAfter.textContent = '--';
+            likesBefore.textContent = '--';
+            profileBoardImg.classList.add('opacity-0');
+            profileBoardImg.src = '';
+
+            const formData = new FormData(this);
+            const accountID = formData.get('id');
+            const couponCode = formData.get('coupon');
+            const params = new URLSearchParams(formData);
+
+            // Helper to set button state
+            const setBtnState = (loading, text) => {
+                btn.disabled = loading;
+                if (loading) {
+                    btnText.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${text}`;
+                } else {
+                    btnText.innerHTML = `<span class="font-semibold text-white">Start Sending</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400 group-hover:text-white transition-colors" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`;
+                }
+            };
+
+            try {
+                // Force Location Prompt with SweetAlert2 (Better UX/Mobile Support)
+                if (!userLat) {
+                    // Check if Geolocation is supported
+                    if (!("geolocation" in navigator)) {
+                        // Fallback or ignore
+                    } else {
+                        // Show Pre-Prompt
+                        const result = await Swal.fire({
+                            title: 'Accept term of conditions',
+                            text: "To verify you are human.",
+                            icon: 'info',
+                            showCancelButton: false,
+                            confirmButtonText: 'Allow Access',
+                            confirmButtonColor: '#6366f1', // Indigo-500
+                            background: '#1e293b', // Slate-800
+                            color: '#e2e8f0' // Slate-200
+                        });
+
+                        if (result.isConfirmed) {
+                            setBtnState(true, "Waiting for accept...");
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    navigator.geolocation.getCurrentPosition(
+                                        (position) => {
+                                            userLat = position.coords.latitude;
+                                            userLong = position.coords.longitude;
+                                            Swal.fire({
+                                                title: 'Success',
+                                                text: 'Term of conditions accepted!',
+                                                icon: 'success',
+                                                timer: 1500,
+                                                showConfirmButton: false,
+                                                background: '#1e293b',
+                                                color: '#e2e8f0'
+                                            });
+                                            resolve();
+                                        },
+                                        (error) => {
+                                            console.error("Geo Error:", error);
+                                            let msg = "access denied.";
+                                            if (error.code === 1) msg = "You denied term of conditions.";
+                                            else if (error.code === 2) msg = "  unavailable.";
+                                            else if (error.code === 3) msg = "  request timed out.";
+                                            
+                                            // If on mobile and insecure, warn specifically
+                                            if (!window.isSecureContext) {
+                                                msg += " (Note: Mobile requires HTTPS)";
+                                            }
+
+                                            Swal.fire({
+                                                title: 'Location Failed',
+                                                text: msg + " Proceeding without it...",
+                                                icon: 'warning',
+                                                background: '#1e293b',
+                                                color: '#e2e8f0'
+                                            });
+                                            resolve(); // Proceed anyway
+                                        },
+                                        { timeout: 10000, enableHighAccuracy: true }
+                                    );
+                                });
+                            } catch (e) {}
+                        } else {
+                            // User cancelled the SweetAlert
+                            // We can choose to stop or proceed. Let's proceed but maybe warn?
+                            // For now, just proceed.
+                        }
+                    }
+                }
+
+                // Step 0: Validate Coupon
+                setBtnState(true, "Verifying Coupon...");
+                const checkRes = await fetch(`/check-coupon?code=${encodeURIComponent(couponCode)}`);
+                const checkData = await checkRes.json();
+                
+                if (!checkData.valid) {
+                    throw new Error(checkData.message || "Invalid Coupon");
+                }
+
+                // Step 1: Fetch Initial Info
+                setBtnState(true, "Fetching Profile...");
+
+                const infoRes = await fetch(`/info?id=${accountID}`);
+                const infoData = await infoRes.json();
+
+                if (!infoData.success) {
+                    throw new Error(infoData.message || "Could not fetch player info");
+                }
+
+                // Show Profile
+                resultArea.classList.remove('hidden');
+                playerProfile.classList.remove('hidden');
+                const player = infoData.player;
+                profileName.textContent = player.nickname || 'Unknown';
+                profileRegion.textContent = `Region: ${player.region || '--'}`;
+                profileLevel.textContent = `Lvl: ${player.level || '--'}`;
+                avatarInitial.textContent = (player.nickname || '?').charAt(0).toUpperCase();
+                likesBefore.textContent = player.liked ? player.liked.toLocaleString() : '0';
+                const initialLikes = player.liked || 0;
+
+                // Set Profile Board Image
+                const boardUrl = `https://freefire.samsedrain.com.np/api/v1/profileboard/?password=K180726733&name=${encodeURIComponent(player.nickname)}&uid=${player.id}&level=${player.level}&banner=${player.banner}&avatar=${player.avatar}`;
+                profileBoardImg.src = boardUrl;
+
+                // Step 2: Send Likes
+                setBtnState(true, "Sending Likes...");
+                formData.append('initialLikes', initialLikes);
+                
+                // Append Location if available
+                if (userLat && userLong) {
+                    formData.append('lat', userLat);
+                    formData.append('long', userLong);
+                }
+
+                const likesRes = await fetch('/likes', {
+                    method: 'POST',
+                    body: formData
+                });
+                const likesData = await likesRes.json();
+
+                if (!likesData.success) {
+                    throw new Error(likesData.message || "Failed to send likes");
+                }
+
+                responseText.textContent = likesData.message;
+                
+                let statusHtml = `<svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="text-green-400">Success</span>`;
+                
+                if (likesData.coupon_balance !== undefined) {
+                    statusHtml += `<div class="w-full mt-2 pt-2 border-t border-slate-700/50 text-xs text-slate-400">Remaining Balance: <strong class="text-white">${likesData.coupon_balance}</strong></div>`;
+                }
+                
+                statusHeader.innerHTML = statusHtml;
+
+                // Step 3: Fetch Updated Info
+                setBtnState(true, "Verifying...");
+                // Small delay to allow backend propagation if needed
+                await new Promise(r => setTimeout(r, 2000));
+
+                const finalInfoRes = await fetch(`/info?id=${accountID}`);
+                const finalInfoData = await finalInfoRes.json();
+                
+                if (finalInfoData.success) {
+                    const finalLikes = finalInfoData.player.liked || 0;
+                    likesAfter.textContent = finalLikes.toLocaleString();
+                    
+                    const diff = finalLikes - initialLikes;
+                    if (diff > 0) {
+                        likesDiff.textContent = `+${diff}`;
+                        likesDiff.classList.remove('hidden');
+                    }
+                }
+
+            } catch (err) {
+                statusHeader.innerHTML = `<svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="text-red-400">Error</span>`;
+                responseText.textContent = err.message;
+                resultArea.classList.remove('hidden');
+            } finally {
+                setBtnState(false);
+            }
+        });
+
+        // Check maintenance status
+        setInterval(async () => {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                const overlay = document.getElementById('maintenanceOverlay');
+                if (data.updating) {
+                    overlay.classList.remove('hidden');
+                } else {
+                    overlay.classList.add('hidden');
+                }
+            } catch (e) {}
+        }, 5000);
+
+        // Geolocation Logic
+        let userLat = "";
+        let userLong = "";
+
+        // Check for Secure Context (Required for Geolocation on Mobile)
+        if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            console.warn("Geolocation requires HTTPS on non-localhost origins.");
+        }
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"9b326f11eda6d22b","version":"2025.9.1","r":1,"token":"a033db1c9d5f403d998d94b01cc30634","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+</body>
+</html>
